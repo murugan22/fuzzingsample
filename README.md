@@ -43,8 +43,7 @@ For testing purposes, you can use the following sample TLV-encoded bytecode in a
 
 Copy code
 X10Y02deZ02ij
-License
-This project is licensed under the MIT License - see the LICENSE file for details.
+
 
 Acknowledgments
 This project is a basic demonstration and can be further extended and customized to meet more complex requirements. Feel free to modify and expand upon it as needed.
