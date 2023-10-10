@@ -13,7 +13,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 class TLVParser:
     def __init__(self):
-        self.error_codes = []
+        self.error_code = None
 
     def parse_bytecode(self, bytecode):
         try:
@@ -23,7 +23,7 @@ class TLVParser:
 
                 if not bytecode:
                     # Error: Incomplete data (missing length and value)
-                    self.error_codes.append("Incomplete data")
+                    self.error_code = "Incomplete data"
                     return
 
                 length_bytes = bytecode[:2]
@@ -32,7 +32,7 @@ class TLVParser:
 
                 if len(bytecode) < length:
                     # Error: Incomplete data (insufficient value bytes)
-                    self.error_codes.append("Incomplete data")
+                    self.error_code = "Incomplete data"
                     return
 
                 value = bytecode[:length]
@@ -42,18 +42,21 @@ class TLVParser:
 
                 # Check for missing size
                 if length == 0:
-                    self.error_codes.append("Missing size")
+                    self.error_code = "Missing size"
+                    return
 
                 # Check for incorrect byte length
                 if len(value) != length:
-                    self.error_codes.append("Incorrect byte length")
+                    self.error_code = "Incorrect byte length"
+                    return
 
         except Exception as e:
             # Handle other exceptions and set an appropriate error code
-            self.error_codes.append("Other error")
+            self.error_code = "Other error"
 
-    def get_error_codes(self):
-        return self.error_codes
+    def get_error_code(self):
+        return self.error_code
+
 
 class Fuzzer:
     def __init__(self):
