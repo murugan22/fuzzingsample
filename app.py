@@ -54,10 +54,56 @@ class TLVParser:
     def get_error_codes(self):
         return self.error_codes
 
-@app.route('/')
+
 def index():
     return render_template('upload.html')
 
+@app.route('/')
+@app.route('/test/incomplete')
+def test_incomplete():
+    # Test data for "Incomplete data"
+    test_bytecode = b'\x01\x03'
+    
+    parser = TLVParser()
+    parser.parse_bytecode(test_bytecode)
+    error_codes = parser.get_error_codes()
+
+    if error_codes:
+        for error_code in error_codes:
+            print(f"Error: {error_code}")
+
+    return f'Test data {test_bytecode} parsed for "Incomplete data ".'
+
+@app.route('/test/incorrect_length')
+def test_incorrect_length():
+    # Test data for "Incorrect byte length"
+    test_bytecode = b'\x01\x03\x00\x07\x02\x03\x80\x01\x01\x00\x05\x03\x03\x01\x00'
+
+    parser = TLVParser()
+    parser.parse_bytecode(test_bytecode)
+    error_codes = parser.get_error_codes()
+
+    if error_codes:
+        for error_code in error_codes:
+            print(f"Error: {error_code}")
+
+    return f'Test data {test_bytecode} parsed for "Incorrect byte length ".'
+
+@app.route('/test/missing_size')
+def test_missing_size():
+    # Test data for "Missing size"
+    test_bytecode = b'\x01\x00'
+
+    parser = TLVParser()
+    parser.parse_bytecode(test_bytecode)
+    error_codes = parser.get_error_codes()
+
+    if error_codes:
+        for error_code in error_codes:
+            print(f"Error: {error_code}")
+
+    return f'Test data {test_bytecode} parsed for "Missing size ".'
+    
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
