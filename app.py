@@ -9,49 +9,50 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 class TLVParser:
     def __init__(self):
-        self.error_code = None
+        self.error_codes = []
 
     def parse_bytecode(self, bytecode):
         try:
             while len(bytecode) > 0:
+                # Extract the next TLV structure
                 tag = bytecode[0:1]
                 bytecode = bytecode[1:]
 
                 if not bytecode:
                     # Error: Incomplete data (missing length and value)
-                    self.error_code = "Incomplete data"
-                    continue  # Continue processing
+                    self.error_codes.append("Incomplete data")
+                    break
+
+                if len(bytecode) < 2:
+                    # Error: Incomplete data (missing length bytes)
+                    self.error_codes.append("Incomplete data")
+                    break
 
                 length_bytes = bytecode[0:2]
                 bytecode = bytecode[2:]
                 length = length_bytes[0] * 256 + length_bytes[1]
 
                 if len(bytecode) < length:
-                    # Error: Incomplete data (insufficient value bytes)
-                    self.error_code = "Incomplete data"
-                    continue  # Continue processing
+                    # Error: Incorrect byte length (length exceeds available data)
+                    self.error_codes.append("Incorrect byte length")
+                    break
+
+                if length == 0:
+                    # Error: Missing size
+                    self.error_codes.append("Missing size")
+                    break
 
                 value = bytecode[0:length]
-                bytecode = bytecode[length:]
+                bytecode = bytecode[length]
 
                 # Process the tag, length, and value here
 
-                # Check for missing size
-                if length == 0:
-                    self.error_code = "Missing size"
-                    continue  # Continue processing
-
-                # Check for incorrect byte length
-                if len(value) != length:
-                    self.error_code = "Incorrect byte length"
-                    continue  # Continue processing
-
         except Exception as e:
             # Handle other exceptions and set an appropriate error code
-            self.error_code = f"Other error: {str(e)}"
+            self.error_codes.append(f"Other error: {str(e)}")
 
-    def get_error_code(self):
-        return self.error_code
+    def get_error_codes(self):
+        return self.error_codes
 
 @app.route('/')
 def index():
@@ -73,13 +74,15 @@ def upload_file():
 
         parser = TLVParser()
         with open(filename, 'rb') as bytecode_file:
-            bytecode = bytecode_file.read()
-            parser.parse_bytecode(bytecode)
-            error_code = parser.get_error_code()
+            bytecodes = bytecode_file.read().splitlines()
+            for bytecode in bytecodes:
+                parser.parse_bytecode(bytecode)
+                error_codes = parser.get_error_codes()
 
-            if error_code:
-                # Handle errors based on the error code
-                print(f"Error: {error_code}")
+                if error_codes:
+                    # Handle errors based on the error codes
+                    for error_code in error_codes:
+                        print(f"Error: {error_code}")
 
             # Continue processing or generate values as needed
 
