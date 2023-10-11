@@ -20,7 +20,7 @@ class TLVParser:
                 if not bytecode:
                     # Error: Incomplete data (missing length and value)
                     self.error_code = "Incomplete data"
-                    return
+                    continue  # Continue processing
 
                 length_bytes = bytecode[0:2]
                 bytecode = bytecode[2:]
@@ -29,7 +29,7 @@ class TLVParser:
                 if len(bytecode) < length:
                     # Error: Incomplete data (insufficient value bytes)
                     self.error_code = "Incomplete data"
-                    return
+                    continue  # Continue processing
 
                 value = bytecode[0:length]
                 bytecode = bytecode[length:]
@@ -39,12 +39,12 @@ class TLVParser:
                 # Check for missing size
                 if length == 0:
                     self.error_code = "Missing size"
-                    return
+                    continue  # Continue processing
 
                 # Check for incorrect byte length
                 if len(value) != length:
                     self.error_code = "Incorrect byte length"
-                    return
+                    continue  # Continue processing
 
         except Exception as e:
             # Handle other exceptions and set an appropriate error code
@@ -79,9 +79,9 @@ def upload_file():
 
             if error_code:
                 # Handle errors based on the error code
-                return f"Error: {error_code}"
+                print(f"Error: {error_code}")
 
-            # If no errors, continue processing or generate values as needed
+            # Continue processing or generate values as needed
 
             # Example: Generate values (modify this as needed)
             generated_values = generate_values(bytecode)  # Replace with your value generation logic
@@ -97,24 +97,7 @@ def upload_file():
 def generate_values(bytecode):
     # Implement your value generation logic here
     # For testing, you can return a list of sample values
-    generated_values = []
-    for code in error_codes:
-        if code == "Incomplete data":
-            # Generate value for incomplete data error
-            generated_values.append("default_value_for_incomplete_data")
-        elif code == "Missing size":
-            # Generate value for missing size error
-            generated_values.append("default_value_for_missing_size")
-        elif code == "Incorrect byte length":
-            # Generate value for incorrect byte length error
-            generated_values.append("default_value_for_incorrect_byte_length")
-        # Add more conditions for other error codes as needed
-
-    # Store the generated values in the instance variable
-    self.generated_values = generated_values
-    print(self.generated_values)
-    def get_generated_values(self):
-        return self.generated_values
+    return ["Value1", "Value2", "Value3"]
 
 if __name__ == '__main__':
     app.run(debug=True)
