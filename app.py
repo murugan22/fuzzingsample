@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 import os
-
+import random
+import bytecode
 app = Flask(__name__)
 
 UPLOAD_FOLDER = 'uploads'
@@ -21,10 +22,14 @@ class TLVParser:
                 if not bytecode:
                     # Error: Incomplete data (missing length and value)
                     self.error_codes.append("Incomplete data")
+                    fuzzed_value = bytes(random.getrandbits(8) for _ in range(length))
+                    print(f"Fuzzed Value: {fuzzed_value}")
                     break
 
                 if len(bytecode) < 2:
                     # Error: Incomplete data (missing length bytes)
+                    fuzzed_value = bytes(random.getrandbits(8) for _ in range(length))
+                    print(f"Fuzzed Value: {fuzzed_value}")
                     self.error_codes.append("Incomplete data")
                     break
 
@@ -35,11 +40,15 @@ class TLVParser:
                 if len(bytecode) < length:
                     # Error: Incorrect byte length (length exceeds available data)
                     self.error_codes.append("Incorrect byte length")
+                    fuzzed_value = bytes(random.getrandbits(8) for _ in range(length))
+                    print(f"Fuzzed Value: {fuzzed_value}")
                     break
 
                 if length == 0:
                     # Error: Missing size
                     self.error_codes.append("Missing size")
+                    fuzzed_value = bytes(random.getrandbits(8) for _ in range(length))
+                    print(f"Fuzzed Value: {fuzzed_value}")
                     break
 
                 value = bytecode[0:length]
@@ -54,7 +63,7 @@ class TLVParser:
     def get_error_codes(self):
         return self.error_codes
 
-
+@app.route('/test/upload')
 def index():
     return render_template('upload.html')
 
@@ -119,16 +128,16 @@ def upload_file():
         file.save(filename)
 
         parser = TLVParser()
+        
         with open(filename, 'rb') as bytecode_file:
-            bytecodes = bytecode_file.read().splitlines()
-            for bytecode in bytecodes:
-                parser.parse_bytecode(bytecode)
-                error_codes = parser.get_error_codes()
+            bytecodes = bytecode_file.read()
+            parser.parse_bytecode(bytecodes)
+            error_codes = parser.get_error_codes()
 
-                if error_codes:
-                    # Handle errors based on the error codes
-                    for error_code in error_codes:
-                        print(f"Error: {error_code}")
+            if error_codes:
+                # Handle errors based on the error codes
+                for error_code in error_codes:
+                    print(f"Error: {error_code}")
 
             # Continue processing or generate values as needed
 
