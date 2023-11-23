@@ -1,0 +1,42 @@
+#We are going to read declarations outside main method
+
+These declarations will contain tlv structure 
+ Ex: 0x11/0x03/0xff/0x12
+
+Type u1 - 4 bytes
+
+We fuzz this declaration along with its tag legth (if it is present in the class file otherwise we undersatnd it from the document and set specific conditions in the code)
+
+https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html
+
+Based on these declarations, we fuzz and test specifically by generating error codes based on the java runtime exception
+First fuzz with empty string, then check and add bytes accroding to error code.
+When starting with empty string, the genearted error code will be incomplete which means we will add a random byte to the empty string and then test it again. 
+
+After we pass the random byte to the jvm
+0x11
+Tag (2 length - 2 bytes)^
+0 - 25
+
+Error Code - Bad, error in opcode -> reaplce 0x11 with new fuzzed value in a range 
+Error Code - Incomplete -> byte is correct however there needs to be more bytes in the whole string, in this case we add another fuzzed value to 0x11 and check again until the whole tag string is valid
+
+0x11/0x13
+^added/appended another byte to this tag string which is valid between the specfific range for that opcode
+
+Parse the file:
+
+We find the first declaration -ACCESS_FLAG
+
+We get the index to the TAG, LENGTH, VALUE (access flag itself)
+
+TAG -> 2 bytes -> we begin to fuzz according to the above process
+LENGTH -> 3 bytes -> fuzz same as above and move on to next step only when length is complete and valid
+VALUE (access_flag) -> 3 bytes only cuz of length -> fuzz according to error condition
+
+
+List of bytecode instructions in a jvm: https://en.wikipedia.org/wiki/List_of_Java_bytecode_instructions
+
+Error codes genearted by the jvm: https://www.jvmerror.com/list-of-jvm-error-codes/
+
+

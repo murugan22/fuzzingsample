@@ -1,0 +1,54 @@
+ Test 1: b'\x01'
+    
+    Getting other error - Error Codes: ['Incomplete data missing length and value', "Other error: cannot access local variable 'length' where it is not associated with a value)"]
+
+Test 2: b'\x01\x01'
+    
+    Getting other error - ['Incomplete data missing length and value', "Other error: cannot access local variable 'length' where it is not associated with a value)", "Other error: cannot access local variable 'length' where it is not associated with a value)
+
+Test 3: b'\x01\x00\x03ab'
+
+            Getting error code saying incomplete data missing length and value -> but length and vlaue is present
+            Getting other error - "Other error: cannot access local variable 'length' where it is not associated with a value)", "Other error: cannot access local variable 'length' where it is not associated with a value)"
+
+            Catching second error correctly - Incorrect byte length, but fuzzing needs to be between 0 to 255 and it needs to be relaced length times
+    
+Test 4: b'\x01\x01\x00'
+    
+    Error Codes: ['Incomplete data missing length and value', "Other error: cannot access local variable 'length' where it is not associated with a value)", "Other error: cannot access local variable 'length' where it is not associated with a value)", 'Incorrect byte length', 'Incorrect byte length']
+
+            - Should fuzz for length 1 after the first error code and stop when it is the end of the string but keeps going through the loop and fuzzes additionally.
+    
+Test 5: b'\x01\x01\x03abcde'
+
+        Output:
+            Length: 
+            259
+            BYTECODE
+            b'abcde'
+            Fuzzed Value: b'\xac\xe5\xd0\x07|\xfc\xc6N\x04\x9eg4\xa4\x04\xc6\x1f.?l\x82\x84\xc4\xd8O\xf3\xf0\xb4\xf7\xab\xa7\xd9\xe2\xedoD>\x87\xbc\x1b\xf8\xa6E\x1f\x82\n\x7f\xe1\xd6@\xa8\x9b\x81\xb7\x16M\xab\xa7`\x13\xb7\x11$\xc2J\x91\x075\xd2\x1d>\xc9\xdc\x11\xcc\xc8#\xae@\xd3\x1c\x03\xbd\xfb\x08(\xf92i\xa0k\xe0\xee\xbfW\xf5u\r\x1f\xd0\x07\xc8{b\xb8\x9c\x9c\xbe{\x83\xf7\x87\x14 \xec_t\x92K9\xd8\x91\x8c\xde\x8f\x1fP\ntj\xc82E\xab\xa7\x1d\x9a\xba}+\x05w\x7f\xb7\x86/&\xd9\\\xc5\xa2\x00Fe\x885\xdf\xcfjs\xc9\xc54\xb2\xc3\tP\xf3\x0e\xe4=5(\rN\xe7\x04\x8f$\xf0\x04\x83\x88\xb4\x9f\x99\xa2~\xdc\xb9\xbb\x07\x0b8\x8d\xe1hx~\x03\x99v\xaf\x8a\xe5\x11\r>.\xf8ga.\xf1+\xcfZ\xc4\xe2\xe8\x1e\x02\xb5\xcb\xc4\x1b3a\xcd\xec\x86\x11%R\xde\x08Q\xa5x\xf6\x91\xf5D3\x84b\xb65\x13\xe3\x84\xbaV\x19\xd5\xc44Ek@'
+            Error Codes: ['Incomplete data missing length and value', "Other error: cannot access local variable 'length' where it is not associated with a value)", "Other error: cannot access local variable 'length' where it is not associated with a value)", 'Incorrect byte length', 'Incorrect byte length', 'Incorrect byte length']
+
+        - Catching first error when that is not the case 
+        - Generating other errors
+        - Detecting incorrect byte length thrice
+        - Fuzzing more than length of 4 
+    
+Test 6: b'\x01\x00\x03abcde\x01\x00\x02a'
+
+        Output: 
+        Length: 
+        3
+        BYTECODE
+        b'abcde\x01\x00\x02a'
+        VALUE
+        b'abc'
+        BYTECODE
+        100
+        3
+        Error Codes: ['Incomplete data missing length and value', "Other error: cannot access local variable 'length' where it is not associated with a value)", "Other error: cannot access local variable 'length' where it is not associated with a value)", 'Incorrect byte length', 'Incorrect byte length', 'Incorrect byte length', "Other error: object of type 'int' has no len())"]
+
+        - Catching first error when that is not the case 
+        - Generating other errors
+        - Catching incorrect byte length twice when it should only catch once
+        - Not catching the error : the length of the value is greater than the actual length
